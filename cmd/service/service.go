@@ -6,24 +6,33 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	om "github.com/the-gigi/go-quote-service/pkg/object_model"
+	"github.com/the-gigi/go-quote-service/pkg/quote_store"
 )
 
 type Service struct {
-	router *mux.Router
-	quotes []string
+	router     *mux.Router
+	quoteStore om.QuoteStore
 }
 
 func (s *Service) register() {
-	s.router = mux.NewRouter()
 	s.router.HandleFunc("/quotes", s.HandleNewQuote).Methods("POST")
 	s.router.HandleFunc("/quotes", s.HandleGetQuotes)
 }
 
 func (s *Service) HandleGetQuotes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(s.quotes)
+	quotes, err := s.quoteStore.GetQuotes()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(quotes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	return
 }
@@ -41,7 +50,11 @@ func (s *Service) HandleNewQuote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	quote := string(body)
-	s.quotes = append(s.quotes, quote)
+	err = s.quoteStore.AddQuote(quote)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	return
 }
@@ -55,9 +68,17 @@ func (s *Service) run(port int) {
 	return
 }
 
-func Run(port int) {
-	var s Service
-	s.quotes = initialQuotes
+func Run(port int, connectionString string) (err error) {
+	quoteStore, err := quote_store.NewQuoteStore(connectionString)
+	if err != nil {
+		return
+	}
+
+	s := Service{
+		router:     mux.NewRouter(),
+		quoteStore: quoteStore,
+	}
 	s.register()
 	s.run(port)
+	return
 }
