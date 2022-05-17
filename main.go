@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/the-gigi/go-quote-service/cmd/service"
 	"os"
 )
