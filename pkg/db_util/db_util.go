@@ -1,3 +1,5 @@
+// "stolen" from https://github.com/the-gigi/go-quote-service/blob/main/pkg/db_util/db_util.go
+
 package db_util
 
 import (
@@ -12,7 +14,7 @@ import (
 	"strings"
 )
 
-type dbParams struct {
+type Params struct {
 	Host     string
 	Port     int
 	User     string
@@ -21,8 +23,8 @@ type dbParams struct {
 	SslMode  string
 }
 
-func defaultDbParams() dbParams {
-	return dbParams{
+func defaultParams() Params {
+	return Params{
 		Host:     "localhost",
 		Port:     5432,
 		User:     "postgres",
@@ -54,22 +56,24 @@ func RunLocalDB(dbName string) (db *sql.DB, err error) {
 		}
 	}
 
-	p := defaultDbParams()
+	p := defaultParams()
 	db, err = EnsureDB(p.Host, p.Port, p.User, p.Password, dbName, p.SslMode)
 	return
 }
 
-func connectToDB(host string, port int, username string, password string, dbName string, sslMode string) (db *sql.DB, err error) {
+func connectToDB(p Params) (db *sql.DB, err error) {
 	mask := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
-	dcn := fmt.Sprintf(mask, host, port, username, password, dbName, sslMode)
+	dcn := fmt.Sprintf(mask, p.Host, p.Port, p.User, p.Password, p.DbName, p.SslMode)
 	db, err = sql.Open("postgres", dcn)
 	return
 }
 
 // EnsureDB ensures sure the database exists (creates it if it doesn't)
-func EnsureDB(host string, port int, username string, password string, dbName string, sslMode string) (db *sql.DB, err error) {
+func EnsureDB(p Params) (db *sql.DB, err error) {
+	dbName := p.DbName
 	// Connect to the postgres DB
-	postgresDb, err := connectToDB(host, port, username, password, "postgres", sslMode)
+	p.DbName = "postgres"
+	postgresDb, err := connectToDB(p)
 	if err != nil {
 		return
 	}
@@ -91,7 +95,9 @@ func EnsureDB(host string, port int, username string, password string, dbName st
 		}
 	}
 
-	db, err = connectToDB(host, port, username, password, dbName, sslMode)
+	// Connect to the DB
+	p.DbName = dbName
+	db, err = connectToDB(p)
 	return
 }
 
