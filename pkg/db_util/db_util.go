@@ -1,5 +1,3 @@
-// "stolen" from https://github.com/the-gigi/go-quote-service/blob/main/pkg/db_util/db_util.go
-
 package db_util
 
 import (
