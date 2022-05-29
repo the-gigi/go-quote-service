@@ -64,9 +64,9 @@ func (s *Service) HandleNewQuote(w http.ResponseWriter, r *http.Request) {
 func (s *Service) run(port int) (err error) {
     address := ":" + strconv.Itoa(port)
     err = http.ListenAndServe(address, s.router)
-    if err == http.ErrServerClosed {
-        err = nil
-    }
+    //if err == http.ErrServerClosed {
+    //	err = nil
+    //}
     return
 }
 
