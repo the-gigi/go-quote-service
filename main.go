@@ -15,6 +15,7 @@ func main() {
 	fmt.Println("Listening on port ", port)
 	err := service.Run(port, connectionString)
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 }
