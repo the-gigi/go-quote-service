@@ -12,6 +12,7 @@ const (
 
 func main() {
 	connectionString := os.Getenv("GO_QUOTE_SERVICE_CONNECTION_STRING")
+	fmt.Println("connection string:", connectionString)
 	fmt.Println("Listening on port ", port)
 	err := service.Run(port, connectionString)
 	if err != nil {
