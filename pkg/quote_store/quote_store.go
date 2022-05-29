@@ -50,7 +50,6 @@ func (p *postgresQuoteStore) AddQuote(quote string) (err error) {
 }
 
 func connect(connectionString string) (db *sql.DB, err error) {
-	fmt.Println("connect(), connectionString:", connectionString)
 	db, err = sql.Open("postgres", connectionString)
 	if err != nil {
 		return
