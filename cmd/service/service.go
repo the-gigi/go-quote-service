@@ -3,8 +3,7 @@ package service
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	//"io/ioutil"
-	"fmt"
+
 	"net/http"
 	"strconv"
 )
@@ -77,15 +76,11 @@ func Run(port int, connectionString string) (err error) {
 	//	return
 	//}
 
-	fmt.Println("1")
 	s := Service{
 		router: mux.NewRouter(),
 		//quoteStore: quoteStore,
 	}
-	fmt.Println("2")
 	s.register()
-	fmt.Println("3")
 	err = s.run(port)
-	fmt.Println("4")
 	return
 }
