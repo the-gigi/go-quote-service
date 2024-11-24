@@ -8,13 +8,13 @@ type inMemoryQuoteStore struct {
 	quotes []string
 }
 
-func (s *inMemoryQuoteStore) GetQuotes() (quotes []string, err error) {
+func (s *inMemoryQuoteStore) GetQuotes() ([]string, error) {
 	return s.quotes, nil
 }
 
-func (s *inMemoryQuoteStore) AddQuote(quote string) (err error) {
+func (s *inMemoryQuoteStore) AddQuote(quote string) error {
 	s.quotes = append(s.quotes, quote)
-	return
+	return nil
 }
 
 func NewInMemoryQuoteStore() (store om.QuoteStore) {
