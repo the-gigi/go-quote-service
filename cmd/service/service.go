@@ -2,10 +2,10 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	om "github.com/the-gigi/go-quote-service/pkg/object_model"
 	"github.com/the-gigi/go-quote-service/pkg/quote_store"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -13,6 +13,10 @@ import (
 type Service struct {
 	router     *mux.Router
 	quoteStore om.QuoteStore
+}
+
+type QuoteRequest struct {
+	Quote string `json:"quote"` // Map the JSON field to the struct field
 }
 
 func (s *Service) register() {
@@ -42,17 +46,14 @@ func (s *Service) HandleNewQuote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var req QuoteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	quote := string(body)
-	err = s.quoteStore.AddQuote(quote)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := s.quoteStore.AddQuote(req.Quote); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	return
@@ -61,22 +62,26 @@ func (s *Service) HandleNewQuote(w http.ResponseWriter, r *http.Request) {
 func (s *Service) run(port int) (err error) {
 	address := ":" + strconv.Itoa(port)
 	err = http.ListenAndServe(address, s.router)
-	if err == http.ErrServerClosed {
+	if errors.Is(err, http.ErrServerClosed) {
 		err = nil
 	}
 	return
 }
 
 func Run(port int, connectionString string) (err error) {
-	quoteStore, err := quote_store.NewQuoteStore(connectionString)
-	if err != nil {
-		return
+	s := Service{
+		router: mux.NewRouter(),
 	}
 
-	s := Service{
-		router:     mux.NewRouter(),
-		quoteStore: quoteStore,
+	if connectionString == "" {
+		s.quoteStore = quote_store.NewInMemoryQuoteStore()
+	} else {
+		s.quoteStore, err = quote_store.NewPostgresQuoteStore(connectionString)
+		if err != nil {
+			return
+		}
 	}
+
 	s.register()
 	err = s.run(port)
 	return

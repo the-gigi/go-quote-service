@@ -63,7 +63,7 @@ func connect(connectionString string) (db *sql.DB, err error) {
 	return
 }
 
-func NewQuoteStore(connectionString string) (store om.QuoteStore, err error) {
+func NewPostgresQuoteStore(connectionString string) (store om.QuoteStore, err error) {
 	var db *sql.DB
 	if connectionString == "" {
 		db, err = db_util.RunLocalDB("quotes")
