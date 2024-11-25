@@ -5,18 +5,25 @@ import (
 	"github.com/the-gigi/go-quote-service/cmd/service"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
+	var port = 7777
 	servicePort := os.Getenv("GO_QUOTE_SERVICE_PORT")
-	if servicePort == "" {
-		servicePort = "7777"
-	}
+	var err error
+	if servicePort != "" {
+		parts := strings.Split(servicePort, ":")
+		if len(parts) > 2 {
+			fmt.Println("Invalid port string")
+			os.Exit(1)
+		}
 
-	port, err := strconv.Atoi(servicePort)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		port, err = strconv.Atoi(parts[len(parts)-1])
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 
 	connectionString := os.Getenv("GO_QUOTE_SERVICE_CONNECTION_STRING")
