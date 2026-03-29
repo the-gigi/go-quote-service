@@ -1,11 +1,11 @@
 module github.com/the-gigi/go-quote-service
 
-go 1.18
+go 1.21
 
 require (
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/gorilla/mux v1.8.0
-	github.com/lib/pq v1.10.5
+	github.com/lib/pq v1.12.0
 )
 
 require (
